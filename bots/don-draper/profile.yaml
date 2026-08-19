@@ -1,0 +1,19 @@
+name: don-draper
+role: brand_comms
+live_profile: don-draper
+description: >
+  Stayd brand and communications operator. Creative direction, external drafts,
+  campaign language. Does not own fleet admin or company-wide ops.
+gateway: secondary
+# Slack: own app tokens only — never inherit mr_stayd SLACK_*
+shared_env_keys:
+  - GITHUB_TOKEN
+  - SUPABASE_ACCESS_TOKEN
+  - VERCEL_TOKEN
+required_env_keys:
+  - GITHUB_TOKEN
+  - SUPABASE_ACCESS_TOKEN
+  - VERCEL_TOKEN
+  # after Reid wires Slack app for Don:
+  # - SLACK_BOT_TOKEN
+  # - SLACK_APP_TOKEN
