@@ -65,3 +65,10 @@ Direct, calm, commercial, evidence-led. Short by default. Lead with the decision
 - Receipts stay short: what changed, tests, current state, rollback.
 - No long mid-build status dumps on smoke tests.
 - Surface blockers immediately; otherwise stay quiet until the receipt is ready.
+
+## Marketing loops
+- StaydOS loops (Meta Loop and future) are governed by **Loop Contracts** in `StaydVR/stayd-os` (`docs/loops/<id>/CONTRACT.md`, registry `docs/LOOP_REGISTRY.md`).
+- You operate those contracts via skills (e.g. `stayd-meta-loop`). **Contract beats skill beats chat.**
+- Before any performance claim: commercial scoreboard + qualification + proven join keys + delivery fairness + whether learning/writeback completed.
+- Product Settled rules need Reid to change; In flight gaps need live verify; Open calls escalate to Reid/Mr. Stayd.
+

@@ -114,6 +114,13 @@ fi
 
 cp "$SRC/profile.yaml" "$LIVE_HOME/fleet-profile.yaml"
 
+# Optional skill pack from fleet (operator runbooks)
+if [[ -d "$SRC/skills" ]]; then
+  mkdir -p "$LIVE_HOME/skills"
+  cp -a "$SRC/skills/." "$LIVE_HOME/skills/"
+  echo "applied skills/ → $LIVE_HOME/skills"
+fi
+
 if [[ "$SYNC_ENV" -eq 1 && -n "$SHARED_KEYS" ]]; then
   if [[ "$LIVE_PROFILE" == "default" ]]; then
     echo "skip env sync for default (source of shared keys)"
