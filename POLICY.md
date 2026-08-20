@@ -7,6 +7,7 @@
 | Layer | Location | In git? |
 |-------|----------|---------|
 | Bot identity / SOUL / role | `fleet/bots/<bot>/` | **Yes** |
+| Runtime hardening (timeouts, compression, fallback, env defaults, gateway-run) | `fleet/bots/<bot>/{runtime-config.yaml,env.defaults,gateway-run.sh}` | **Yes** (no secrets) |
 | Apply scripts / policy | `fleet/scripts`, `fleet/POLICY.md` | **Yes** |
 | Live Hermes profile runtime | `/opt/data/profiles/<live_profile>/` (default: `/opt/data`) | **No** (generated) |
 | Secrets | runtime `.env` only | **Never** |

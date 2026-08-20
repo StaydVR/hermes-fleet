@@ -107,9 +107,22 @@ if [[ -f "$SRC/AGENTS.md" ]]; then
   echo "applied AGENTS.md → $LIVE_HOME/AGENTS.md"
 fi
 
-if [[ -f "$SRC/config.overlay.yaml" ]]; then
-  cp "$SRC/config.overlay.yaml" "$LIVE_HOME/config.overlay.yaml"
-  echo "copied config.overlay.yaml (manual merge into config.yaml if needed)"
+# Runtime config hardening (providers/timeouts/compression/fallback/session_reset)
+# Prefer runtime-config.yaml; keep legacy config.overlay.yaml name as alias.
+OVERLAY=""
+if [[ -f "$SRC/runtime-config.yaml" ]]; then
+  OVERLAY="$SRC/runtime-config.yaml"
+elif [[ -f "$SRC/config.overlay.yaml" ]]; then
+  OVERLAY="$SRC/config.overlay.yaml"
+fi
+if [[ -n "$OVERLAY" ]]; then
+  cp "$OVERLAY" "$LIVE_HOME/fleet-runtime-config.yaml"
+  if [[ -f "$LIVE_HOME/config.yaml" ]]; then
+    /opt/hermes/.venv/bin/python3 "$ROOT/scripts/merge-config-overlay.py" \
+      "$LIVE_HOME/config.yaml" "$OVERLAY"
+  else
+    echo "WARN: no live config.yaml yet; skipped merge ($LIVE_HOME)" >&2
+  fi
 fi
 
 cp "$SRC/profile.yaml" "$LIVE_HOME/fleet-profile.yaml"
@@ -126,6 +139,25 @@ if [[ "$SYNC_ENV" -eq 1 && -n "$SHARED_KEYS" ]]; then
     echo "skip env sync for default (source of shared keys)"
   else
     "$ROOT/scripts/sync-shared-env.sh" "$LIVE_HOME/.env" "/opt/data/.env" "$SHARED_KEYS"
+  fi
+fi
+
+# Non-secret env defaults (stream watchdogs, etc.)
+if [[ -f "$SRC/env.defaults" ]]; then
+  bash "$ROOT/scripts/upsert-env-defaults.sh" "$LIVE_HOME/.env" "$SRC/env.defaults"
+fi
+
+# Best-effort: pin s6 gateway run script when fleet ships one
+if [[ -f "$SRC/gateway-run.sh" ]]; then
+  cp "$SRC/gateway-run.sh" "$LIVE_HOME/gateway-run.sh"
+  chmod +x "$LIVE_HOME/gateway-run.sh"
+  S6_RUN="/run/service/gateway-${LIVE_PROFILE}/run"
+  if [[ -d "/run/service/gateway-${LIVE_PROFILE}" ]]; then
+    cp "$SRC/gateway-run.sh" "$S6_RUN"
+    chmod +x "$S6_RUN"
+    echo "applied gateway-run.sh → $S6_RUN (restart gateway slot separately if needed)"
+  else
+    echo "gateway-run.sh saved to profile; s6 slot not present yet"
   fi
 fi
 
