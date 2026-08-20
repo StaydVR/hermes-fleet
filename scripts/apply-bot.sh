@@ -151,13 +151,19 @@ fi
 if [[ -f "$SRC/gateway-run.sh" ]]; then
   cp "$SRC/gateway-run.sh" "$LIVE_HOME/gateway-run.sh"
   chmod +x "$LIVE_HOME/gateway-run.sh"
-  S6_RUN="/run/service/gateway-${LIVE_PROFILE}/run"
-  if [[ -d "/run/service/gateway-${LIVE_PROFILE}" ]]; then
+  # s6 slot names: gateway-default for live_profile=default, else gateway-<profile>
+  if [[ "$LIVE_PROFILE" == "default" ]]; then
+    S6_NAME="gateway-default"
+  else
+    S6_NAME="gateway-${LIVE_PROFILE}"
+  fi
+  S6_RUN="/run/service/${S6_NAME}/run"
+  if [[ -d "/run/service/${S6_NAME}" ]]; then
     cp "$SRC/gateway-run.sh" "$S6_RUN"
     chmod +x "$S6_RUN"
     echo "applied gateway-run.sh → $S6_RUN (restart gateway slot separately if needed)"
   else
-    echo "gateway-run.sh saved to profile; s6 slot not present yet"
+    echo "gateway-run.sh saved to profile; s6 slot ${S6_NAME} not present yet"
   fi
 fi
 
