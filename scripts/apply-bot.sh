@@ -102,6 +102,11 @@ fi
 cp "$SRC/SOUL.md" "$LIVE_HOME/SOUL.md"
 echo "applied SOUL.md → $LIVE_HOME/SOUL.md"
 
+if [[ -f "$SRC/AGENTS.md" ]]; then
+  cp "$SRC/AGENTS.md" "$LIVE_HOME/AGENTS.md"
+  echo "applied AGENTS.md → $LIVE_HOME/AGENTS.md"
+fi
+
 if [[ -f "$SRC/config.overlay.yaml" ]]; then
   cp "$SRC/config.overlay.yaml" "$LIVE_HOME/config.overlay.yaml"
   echo "copied config.overlay.yaml (manual merge into config.yaml if needed)"
