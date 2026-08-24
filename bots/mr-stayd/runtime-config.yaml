@@ -1,10 +1,16 @@
 # Runtime hardening for Mr Stayd (live_profile: default).
-# Same hang class as Don 2026-08-20: large-context grok-4.5 stream idle.
+# Model pin + hang-class stream idle timeouts (see don-draper 2026-08-20).
+
+model:
+  default: grok-4.6
+  provider: xai-oauth
 
 providers:
   xai-oauth:
     stale_timeout_seconds: 900
     models:
+      "grok-4.6":
+        stale_timeout_seconds: 900
       "grok-4.5":
         stale_timeout_seconds: 900
 

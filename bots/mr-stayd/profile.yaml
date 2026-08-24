@@ -5,4 +5,4 @@ description: >
   Stayd chief of staff. Company-wide context, drive work to done, surface decisions.
   Admins the Hermes fleet via git-backed apply. Not a brand voice.
 gateway: primary
-model_note: inherits host default
+model_note: "default grok-4.6 via xai-oauth (fleet runtime-config)"
