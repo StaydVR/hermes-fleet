@@ -1,17 +1,25 @@
 # Runtime hardening for Don (merged into live config.yaml by apply-bot.sh).
-# Prevents the 2026-08-20 failure mode: huge-context grok-4.5 stream idle
-# kill + no provider failover.
+# 2026-08-20: huge-context grok stream idle kill + no provider failover.
+# 2026-08-25: grok-4.5 HTTP 400 — xAI reserves function name tool_search;
+#             fallback hermes-4-70b 404 on Nous inference. Pin grok-4.6
+#             (same as Mr Stayd). Fallback uses OpenRouter catalog id.
+
+model:
+  default: grok-4.6
+  provider: xai-oauth
 
 providers:
   xai-oauth:
     stale_timeout_seconds: 900
     models:
+      "grok-4.6":
+        stale_timeout_seconds: 900
       "grok-4.5":
         stale_timeout_seconds: 900
 
 fallback_providers:
   - provider: nous
-    model: hermes-4-70b
+    model: nousresearch/hermes-4-70b
 
 compression:
   enabled: true
