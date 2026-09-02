@@ -5,4 +5,7 @@ description: >
   Stayd chief of staff. Company-wide context, drive work to done, surface decisions.
   Admins the Hermes fleet via git-backed apply. Not a brand voice.
 gateway: primary
+agent_tier: fleet_operator
+department_owner_role: company_operations_owner
+security_owner_role: security_owner
 model_note: "default grok-4.6 via xai-oauth (fleet runtime-config)"

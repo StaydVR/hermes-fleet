@@ -1,85 +1,60 @@
 # Meta Loop diagnosis checklist
 
-**Always open first:** stayd-os `docs/loops/meta-loop/CONTRACT.md`  
-Registry: `docs/LOOP_REGISTRY.md`
+Open the current StaydOS Meta Loop contract and loop registry first.
 
-## PostgREST pulls (service_role)
+## Pulls
 
-Prefer `select=*` on one row when columns are uncertain.
+Use the registered live views or bounded APIs for:
 
-| Check | Table / filter |
-|-------|----------------|
-| Active runs | `meta_loop_runs` stage not in done/entropy/killed |
-| Dashboard | `meta_loop_run_dashboard` |
-| Stalled | `meta_loop_stalled_runs` |
-| Config | `meta_loop_brand_configs` |
-| Creatives | `meta_loop_creatives?run_id=eq.<uuid>` |
-| Snapshots | `meta_loop_trial_snapshots?creative_id=in.(…)` — **no run_id** |
-| Decisions / approvals / events | by `run_id` |
-| Pains | `meta_loop_pains` brand order rank |
-| Harness ads | `meta_ads?adset_id=eq.<harness>` |
-| CRM loop leads | `leads` brand + trial window + `meta_loop_lp` / LP |
+- active runs and stalled runs;
+- leaf-brand config and promotion prerequisites;
+- creatives for the exact run;
+- trial snapshots by the documented creative key;
+- qualified CRM outcomes;
+- decisions, approvals, events, and learning records.
 
-### Known columns (2026-08)
+Prefer a minimal field list once schema is known. When schema is uncertain, inspect one bounded row without printing confidential fields or raw credentials.
 
-**meta_loop_runs:** `id, brand_config_id, brand_id, objective, stage, trial_start_at, trial_end_at, notes, created_at, updated_at, hidden, leased_until`  
-**snapshots:** `creative_id, brand_id, snapshot_date, spend_cents, impressions, link_clicks, link_ctr, cpc_cents, leads, cpl_cents, raw`  
-**leads:** includes `meta_ad_id`, `meta_adset_id`, `meta_campaign_id`, utm_*, `raw_payload` — **ids often null** on loop LPs
+## Commercial qualification
 
-## Commercial qualification (mandatory)
+For each candidate CRM outcome:
 
-For each CRM loop lead:
+1. Confirm the current contract's accepted source.
+2. Confirm it is inside the leaf brand's approved service scope.
+3. Exclude spam and invalid rows.
+4. Treat missing required qualification fields according to the contract; do not guess.
+5. Map to creative only through a verified provider id or documented fallback key.
 
-1. `lead_source` / payload `lead_source` = `meta_loop_lp`
-2. Property state in **service area** (Renjoy → CO). HI/NC/etc. = **not commercial**
-3. Not spam
-4. Blank state = **not commercial** until fail-closed
-5. Map to creative via `utm_content` / LP until `meta_ad_id` populated
+Commercial count is not raw row count.
 
-**Commercial count ≠ row count.**
+## Platform health
 
-## Health (Insights)
+Provider-derived lead actions are health evidence. Report them beside qualified CRM outcomes and explain the delta. Never add them together.
 
-Snapshot `leads` column = Insights-derived. Report beside commercial; **do not add them together**.
+## Join proof
 
-OOA → no Pixel Lead is **intentional** (`LeadForm.tsx`).
+- Inspect current payload keys on a bounded sample.
+- Prefer populated explicit ids.
+- State when a field exists but is null.
+- Never assume a label is the internal run id.
+- Report unmatched rows and join confidence.
 
-## Join keys
+## Delivery fairness
 
-| Prefer | Avoid assuming |
-|--------|----------------|
-| `utm_content`, LP slug | `utm_id` always present |
-| `creatives.meta_ad_id` when set | `raw_payload.run_id` as UUID |
-| Check payload keys on 1–3 sample rows first | “column missing” when value is null |
-
-## Delivery skew
-
-Per creative: spend %, impr, clicks, insights leads, **qualified CRM**.  
-Flag >~60–70% spend concentration or creatives under impression floors.
+For each creative report spend share, impressions, clicks, provider health actions, and qualified CRM outcomes. Flag material concentration and creatives below the contract's decision floor before ranking.
 
 ## Learning health
 
-| Symptom | Meaning |
-|---------|---------|
-| pains untested, times_used=0 | No writeback learning |
-| never writeback/done | Cycle incomplete |
-| winners_*=null | Cannot promote that brand |
+Check whether the run reached writeback and completion, whether learning records changed, and whether the leaf brand has the promotion prerequisites required by contract.
 
 ## Report shape
 
-1. Verdict  
-2. Board: commercial CRM + insights health  
-3. Per-creative delivery  
-4. P0–P2 vs contract  
-5. Actions / Open calls / L3  
+1. Verdict.
+2. Commercial outcome and platform-health board.
+3. Per-creative delivery and qualified outcomes.
+4. Data-quality, fairness, and contract gaps.
+5. Actions, owner roles, open product calls, and explicit approvals.
 
-## Code map
+## Verification
 
-| Concern | Path |
-|---------|------|
-| Contract | `docs/loops/meta-loop/CONTRACT.md` |
-| Form | `src/app/lp/[slug]/LeadForm.tsx` |
-| Intake | `src/app/api/leads/inbound/route.ts` |
-| Trial | `src/lib/meta-loop/trial-reader.ts` |
-| Judge | `judge.ts`, `judge-rules.ts` |
-| Writeback | `writeback.ts` |
+Before marking success, read back the current run state and any internal write. Campaign activation, spend, publishing, pausing, or external provider mutation requires a separately approved bounded path.

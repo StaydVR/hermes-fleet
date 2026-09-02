@@ -8,9 +8,10 @@ BOT=""
 COMMIT=""
 RECORD=0
 SYNC_ENV=1
+DRY_RUN=0
 
 usage() {
-  echo "Usage: $0 <bot> [--commit SHA] [--record] [--no-sync-env]"
+  echo "Usage: $0 <bot> [--commit SHA] [--record] [--no-sync-env] [--dry-run]"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -18,6 +19,7 @@ while [[ $# -gt 0 ]]; do
     --commit) COMMIT="${2:?}"; shift 2 ;;
     --record) RECORD=1; shift ;;
     --no-sync-env) SYNC_ENV=0; shift ;;
+    --dry-run) DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *)
       if [[ -z "$BOT" ]]; then BOT="$1"; shift
@@ -33,23 +35,34 @@ BOT_DIR="$ROOT/bots/$BOT"
 
 cd "$ROOT"
 WORK=""
-cleanup() { [[ -n "${WORK}" && -d "${WORK}" ]] && rm -rf "$WORK"; }
+SKILL_STAGE=""
+cleanup() {
+  [[ -n "${WORK}" && -d "${WORK}" ]] && rm -rf -- "$WORK"
+  [[ -n "${SKILL_STAGE}" && -d "${SKILL_STAGE}" ]] && rm -rf -- "$SKILL_STAGE"
+  return 0
+}
 trap cleanup EXIT
 
 if [[ -n "$COMMIT" ]]; then
   git cat-file -e "${COMMIT}^{commit}" 2>/dev/null || { echo "unknown commit $COMMIT" >&2; exit 1; }
   SHA=$(git rev-parse "$COMMIT")
   WORK=$(mktemp -d)
-  git archive "$SHA" "bots/$BOT" | tar -x -C "$WORK"
+  ARCHIVE_PATHS=("bots/$BOT")
+  if git cat-file -e "${SHA}:skills" 2>/dev/null; then
+    ARCHIVE_PATHS+=("skills")
+  fi
+  git archive "$SHA" "${ARCHIVE_PATHS[@]}" | tar -x -C "$WORK"
   SRC="$WORK/bots/$BOT"
+  SHARED_SKILLS="$WORK/skills"
 else
-  if [[ -n $(git status --porcelain) ]]; then
+  if [[ "$DRY_RUN" -eq 0 && -n $(git status --porcelain) ]]; then
     echo "ERROR: dirty worktree. Commit first, or pass --commit <sha>." >&2
     git status -sb >&2
     exit 1
   fi
   SHA=$(git rev-parse HEAD)
   SRC="$BOT_DIR"
+  SHARED_SKILLS="$ROOT/skills"
 fi
 
 [[ -f "$SRC/profile.yaml" ]] || { echo "missing profile.yaml" >&2; exit 1; }
@@ -89,6 +102,27 @@ PY
 LIVE_PROFILE=$(printf '%s\n' "$parse_out" | sed -n '1p')
 SHARED_KEYS=$(printf '%s\n' "$parse_out" | sed -n '2p')
 
+LOCAL_SKILLS="$SRC/skills"
+python3 "$ROOT/scripts/compose-skills.py" \
+  --shared "$SHARED_SKILLS" \
+  --bot "$LOCAL_SKILLS" \
+  --check-only
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "DRY RUN OK: bot=$BOT live_profile=$LIVE_PROFILE shared_env_keys=${SHARED_KEYS:-none}"
+  echo "No live profile, env, gateway, or apply marker was changed."
+  exit 0
+fi
+
+# Materialize the full skill tree before any live profile file is changed.
+if [[ -d "$SHARED_SKILLS" || -d "$LOCAL_SKILLS" ]]; then
+  SKILL_STAGE=$(mktemp -d)
+  python3 "$ROOT/scripts/compose-skills.py" \
+    --shared "$SHARED_SKILLS" \
+    --bot "$LOCAL_SKILLS" \
+    --destination "$SKILL_STAGE"
+fi
+
 if [[ "$LIVE_PROFILE" == "default" ]]; then
   LIVE_HOME="/opt/data"
 else
@@ -127,11 +161,12 @@ fi
 
 cp "$SRC/profile.yaml" "$LIVE_HOME/fleet-profile.yaml"
 
-# Optional skill pack from fleet (operator runbooks)
-if [[ -d "$SRC/skills" ]]; then
+# Compose shared fleet skills first, then the bot-local overlay. Name collisions
+# are rejected before this point and before any skill reaches the live profile.
+if [[ -n "$SKILL_STAGE" ]]; then
   mkdir -p "$LIVE_HOME/skills"
-  cp -a "$SRC/skills/." "$LIVE_HOME/skills/"
-  echo "applied skills/ → $LIVE_HOME/skills"
+  cp -a "$SKILL_STAGE/." "$LIVE_HOME/skills/"
+  echo "applied shared + bot-local skills/ → $LIVE_HOME/skills"
 fi
 
 if [[ "$SYNC_ENV" -eq 1 && -n "$SHARED_KEYS" ]]; then
@@ -174,7 +209,7 @@ APPLIED_FILE="$BOT_DIR/.applied"
   echo "live_profile=$LIVE_PROFILE"
   echo "live_home=$LIVE_HOME"
   echo "applied_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  echo "applied_by=${USER:-mr-stayd}"
+  echo "applied_by=${USER:-fleet-operator}"
 } > "$APPLIED_FILE"
 
 cp "$APPLIED_FILE" "$LIVE_HOME/.fleet-applied"

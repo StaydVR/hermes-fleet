@@ -1,0 +1,14 @@
+name: <agent-slug>
+role: <role-slug>
+live_profile: <agent-slug>
+description: >
+  <durable role description>
+gateway: <primary-or-secondary>
+agent_tier: <fleet-operator-or-department-or-external>
+department_owner_role: <department-owner-role>
+security_owner_role: <security-owner-role>
+shared_env_keys: []
+required_env_keys:
+  - SLACK_BOT_TOKEN
+  - SLACK_APP_TOKEN
+  - <SERVICE-CREDENTIAL-ENV-NAME>

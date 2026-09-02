@@ -5,6 +5,9 @@ description: >
   Stayd brand and communications operator. Creative direction, external drafts,
   campaign language. Does not own fleet admin or company-wide ops.
 gateway: secondary
+agent_tier: department
+department_owner_role: marketing_department_owner
+security_owner_role: security_owner
 # Slack: own app tokens only — never inherit mr_stayd SLACK_*
 shared_env_keys:
   - GITHUB_TOKEN
@@ -14,6 +17,6 @@ required_env_keys:
   - GITHUB_TOKEN
   - SUPABASE_ACCESS_TOKEN
   - VERCEL_TOKEN
-  # after Reid wires Slack app for Don:
+  # after the security owner wires this profile's Slack app:
   # - SLACK_BOT_TOKEN
   # - SLACK_APP_TOKEN

@@ -4,6 +4,44 @@
 #             fallback hermes-4-70b 404 on Nous inference. Pin grok-4.6
 #             (same as Mr Stayd). Fallback uses OpenRouter catalog id.
 
+# Fleet-wide Slack quiet-mode and verified lifecycle behavior.
+agent:
+  gateway_notify_interval: 0
+
+display:
+  interim_assistant_messages: false
+  tool_progress: "off"
+  thinking_progress: false
+  live_status: "off"
+  platforms:
+    slack:
+      interim_assistant_messages: false
+      tool_progress: "off"
+      thinking_progress: false
+      streaming: false
+      long_running_notifications: false
+      busy_ack_detail: false
+      live_status: "off"
+
+gateway:
+  streaming:
+    enabled: false
+
+platforms:
+  slack:
+    reply_to_mode: first
+    extra:
+      reply_in_thread: true
+      reply_broadcast: false
+      native_task_cards: false
+      allow_bots: mentions
+
+slack:
+  require_mention: true
+  strict_mention: false
+  thread_require_mention: false
+  ignore_other_user_mentions: true
+
 model:
   default: grok-4.6
   provider: xai-oauth

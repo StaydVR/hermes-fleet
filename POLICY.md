@@ -1,35 +1,51 @@
 # Stayd Hermes fleet policy
 
-**Decided:** 2026-08-19 by Reid — architecture option 1 (one machine, many profiles) + **git audit trail**.
+This policy is binding for every profile managed by this repository. The architecture is one host with isolated Hermes profiles and a git audit trail.
 
 ## Source of truth
 
-| Layer | Location | In git? |
-|-------|----------|---------|
-| Bot identity / SOUL / role | `fleet/bots/<bot>/` | **Yes** |
-| Runtime hardening (timeouts, compression, fallback, env defaults, gateway-run) | `fleet/bots/<bot>/{runtime-config.yaml,env.defaults,gateway-run.sh}` | **Yes** (no secrets) |
-| Apply scripts / policy | `fleet/scripts`, `fleet/POLICY.md` | **Yes** |
-| Live Hermes profile runtime | `/opt/data/profiles/<live_profile>/` (default: `/opt/data`) | **No** (generated) |
-| Secrets | runtime `.env` only | **Never** |
-| Sessions / memory / state.db | live profile dirs | **No** |
+| Layer | Source | Tracked? |
+|---|---|---|
+| Agent identity, role, and profile metadata | `bots/<slug>/` | Yes |
+| Fleet standards and shared skills | `docs/`, `skills/`, `POLICY.md` | Yes |
+| Apply and validation tooling | `scripts/`, `tools/`, `tests/` | Yes |
+| Live Hermes profile | `/opt/data` or `/opt/data/profiles/<live-profile>` | No; generated |
+| Credentials | protected runtime env or provider secret store | Never |
+| Sessions, memory, and runtime state | live profile only | Never |
 
-## Rules
+## Governance roles
 
-1. **No live bot config change without a git commit** in this repo (or a PR merge into the tracked branch).
-2. Mr. Stayd (or an owner) edits `bots/<name>/` → `git commit` → `scripts/apply-bot.sh <name>`.
-3. `apply-bot.sh` refuses to run if the worktree is dirty, unless `--commit <sha>` is passed.
-4. Every apply writes `bots/<name>/.applied` (commit, time, actor) **and** commits that marker only if you use `apply-bot.sh --record` (optional). Prefer logging apply in the same change commit message: `apply(don-draper): <sha>`.
-5. Secrets are never written into this repo. Apply may **sync allowlisted keys** from default host `.env` into a profile `.env` when `profile.yaml` lists `shared_env_keys`.
-6. Slack tokens are **per bot**. Apply never copies `SLACK_*` from default → profile.
-7. Deleting a bot: PR removes `bots/<name>/`, apply (or manual) runs `hermes profile delete` only with owner approval.
+- **Fleet operator:** runs preflight, apply, profile-specific restarts, and operational acceptance.
+- **Repository maintainer:** reviews tracked changes and protects the source-to-live mechanism.
+- **Security owner:** approves credentials, permissions, new powers, external access, and incident response.
+- **Department owner:** owns the agent charter, domain accuracy, audience, and acceptance prompts.
+- **Requester:** defines the outcome and supplies business context; request authority is not automatically approval authority.
+- **Reviewer:** independently checks the diff, evidence, and rollback path.
 
-## Branch
+One person may hold more than one role, but approvals must still be made in the capacity named above.
 
-- Default branch: `main`
-- Remote (when connected): `StaydVR/hermes-fleet` (private)
+## Change rules
 
-## Who may apply
+1. Live configuration is applied from a reviewed commit. A normal apply refuses a dirty worktree; `--commit <sha>` applies an immutable reviewed revision.
+2. Every agent must have a durable department owner role. The fleet operator does not silently inherit domain ownership.
+3. `scripts/apply-bot.sh` is the only normal source-to-live path. Manual emergency changes must be captured in git or reverted immediately after containment.
+4. Shared skills install for every bot. Bot-local skills may add narrower behavior, but duplicate skill names are rejected.
+5. Secrets, personal data, production identifiers, sessions, and memories never enter this repository.
+6. Slack credentials are profile-specific. Shared env sync refuses every `SLACK_*` key.
+7. New credentials, permissions, channels, standing rules, consequential write powers, public actions, spend, deletion, and profile shutdown require the responsible security or department approval.
+8. Deleting a bot requires an approved removal plan, credential rotation or revocation, runtime verification, and a recoverable rollback point.
+9. A successful command is not proof of completion. The fleet operator must verify the real outcome from the authoritative system before the agent or operator finalizes success.
+10. Do not commit or push an apply marker automatically unless the change process explicitly calls for an audited marker update.
 
-- Mr. Stayd on this host
-- Reid (owner)
-- Other owners if Reid delegates
+## Slack contract
+
+Every profile follows [`docs/SLACK_STANDARD.md`](docs/SLACK_STANDARD.md). Runtime overlays must disable thought/reasoning exposure, streaming, interim assistant text, tool-progress messages, live status, long-running notices, native task cards, and heartbeat noise. Work starts with `:eyes:`. Only independently verified success receives `:white_check_mark:`. Failure receives no check. Channel responses remain in non-broadcast threads and end with exactly one concise final receipt.
+
+## Branch and review
+
+- Default branch: `main`.
+- Durable policy, security, source hierarchy, factory, validator, and apply-tool changes require repository-maintainer review.
+- Credential or permission changes also require security-owner review.
+- Agent charter or source-semantics changes also require department-owner review.
+
+See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for the complete process.

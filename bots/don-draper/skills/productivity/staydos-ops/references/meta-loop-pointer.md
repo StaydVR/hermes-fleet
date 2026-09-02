@@ -1,23 +1,21 @@
-# Meta Loop (pointer from staydos-ops)
+# Meta Loop pointer
 
-Meta Loop is **not** the Tuesday sales scorecard. It is Stayd OS’s multi-brand Meta ads test state machine.
+Meta Loop is StaydOS's multi-brand paid-media test state machine. It is separate from recurring sales scorecards and general CRM funnel reporting.
 
-**Product contract (source of truth):**  
-`StaydVR/stayd-os` → `docs/loops/meta-loop/CONTRACT.md`  
-**Registry:** `docs/LOOP_REGISTRY.md`  
-**Load skill:** `stayd-meta-loop`
+## Source order
 
-## Shared hard rules (Settled 2026-08-20)
+1. StaydOS Meta Loop product contract.
+2. StaydOS loop registry.
+3. `stayd-meta-loop` skill.
 
-1. **Commercial scoreboard = qualified CRM** (in-area, not spam; blank state not qualified).
-2. **Meta Insights leads = health only** — never dual-count with CRM.
-3. **OOA no Pixel Lead is by design** — not automatically a tracking bug.
-4. Before claiming joins: verify payload keys; `leads.meta_ad_id` exists but is often null; `utm_id` often absent from payload.
-5. Contract > skill > chat.
+Contract beats skill; skill beats chat.
 
-## When to hand off
+## Shared rules
 
-| Task | Skill |
-|------|--------|
-| Brian/Renjoy Tue scorecard, RevMaaS, CRM funnel | `staydos-ops` |
-| Meta Loop run audit, trial health, judge, writeback | `stayd-meta-loop` |
+1. Commercial outcomes are CRM rows qualified under the current contract.
+2. Provider-reported lead actions are health evidence; never dual-count them with CRM outcomes.
+3. Verify live payload keys before claiming an attribution join.
+4. Distinguish present-but-null fields from missing schema.
+5. Check delivery fairness and learning completion before a performance judgment.
+
+Use the general StaydOS operations pathway for recurring sales scorecards and CRM reporting. Use `stayd-meta-loop` for run health, trial evidence, attribution, judge readiness, and writeback.

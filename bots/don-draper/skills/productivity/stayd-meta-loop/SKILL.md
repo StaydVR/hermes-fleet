@@ -1,138 +1,89 @@
 ---
 name: stayd-meta-loop
-description: "Use when auditing or operating Stayd OS Meta Loop."
-version: 2.0.0
+description: "Use when auditing or operating the StaydOS Meta Loop under its current product contract."
+version: 3.0.0
 metadata:
   hermes:
     tags: [stayd, meta-loop, marketing, meta-ads, staydos, supabase, loop-contract]
-    related_skills: [staydos-ops, stayd-hermes-fleet]
+    related_skills: [staydos-platform-architecture, staydos-agent-api]
 ---
 
-# Stayd Meta Loop ops
+# Stayd Meta Loop operations
 
-Operate and diagnose the **Meta Loop** using the **product contract first**.
+Operate and diagnose the Meta Loop from its current product contract. This skill describes method; it does not replace live product truth or grant campaign write authority.
 
-**Contract (source of truth):** in `StaydVR/stayd-os`:
-`docs/loops/meta-loop/CONTRACT.md`  
-**Registry:** `docs/LOOP_REGISTRY.md`  
-**Template (all loops):** `docs/loops/_TEMPLATE.md`
+## Source order
 
-**Conflict rule:** Contract > this skill > chat. If this skill drifts, patch it and fleet-apply — do not freestyle scoreboard rules.
+1. Read the Meta Loop contract and loop registry in the StaydOS repository.
+2. Read current implementation and migrations for the affected stage.
+3. Query the registered live StaydOS views or bounded APIs.
+4. Use this skill for the diagnosis sequence and output shape.
 
-Not for Tuesday sales scorecards (`staydos-ops`) or Hermes fleet secrets (`stayd-hermes-fleet`).
+Contract beats skill; skill beats chat. If the contract and live behavior diverge, report the gap and route a product decision rather than inventing a new rule.
 
 ## When to use
 
-- Reid / Mr. Stayd asks to review, audit, or improve the Meta Loop
-- Active run health, pre-judge checks, attribution mysteries
-- Before crowning winners, killing a run, or claiming “0 leads” / “ads don’t convert”
+- active-run health and stage progression;
+- tracking, attribution, or delivery diagnosis;
+- pre-judge review before ranking or stopping a creative;
+- writeback and learning-cycle completion;
+- a claim that leads are absent or ads are not converting.
 
-## Identity map
+## Authority
 
-| Resource | Value |
-|----------|--------|
-| Product | Stayd OS · `https://os.stayd.co` |
-| Code | `StaydVR/stayd-os` · `src/lib/meta-loop/*` |
-| Contract | `docs/loops/meta-loop/CONTRACT.md` |
-| Live DB | `yvlsclsqeadtuzchywad` |
-| Cron | `/api/cron/meta-loop`, `/api/cron/meta-loop-health` |
+- Read approved campaign, run, snapshot, and qualified CRM evidence.
+- Diagnose and draft recommendations.
+- Do not activate, pause, publish, change spend, modify audiences, or perform external writes without the exact approved bounded pathway.
+- Treat task acceptance as permission to investigate and draft, not to go live.
 
-## Access
+## Commercial and health evidence
 
-Same as `staydos-ops`: management token → project API keys → service_role. Browser-like `User-Agent`. Never print tokens. Never store service_role in git/fleet.
+Keep two measures separate:
 
-## Settled scoreboard (Reid 2026-08-20) — memorize
+1. **Commercial outcome:** CRM records that meet the current contract's source, service-area, spam, and required-field qualification rules.
+2. **Platform health:** provider-reported lead actions and delivery signals from trial snapshots.
 
-1. **Commercial truth = qualified CRM leads only**
-   - `meta_loop_lp` (or clear loop LP)
-   - **In brand service area** (Renjoy = CO area)
-   - Not spam
-   - Blank `property_state` → **not qualified** for commercial score (fail-open hole is In flight)
-2. **Meta Insights “lead” actions = health only** — trial snapshots
-3. **Never dual-count** Insights + CRM into one number
-4. **OOA no Pixel Lead is by design** (`LeadForm` + inbound) — not a counting bug when Insights = 0 for HI/NC
-5. Always report a table: `commercial_qualified_crm | insights_health | delta_note`
+Never add the two into one lead count. Report both with a delta note. A raw CRM row count is not a qualified commercial count.
 
-### Do not
+Read the current contract for exact qualification rules. Blank or uncertain qualification fields do not become positive outcomes by assumption.
 
-- Say “3 CRM leads” without qualification filter
-- Propose dual-count Meta+CRM as the fix
-- Claim `utm_id` join works without checking payload keys on live rows
-- Treat `raw_payload.run_id` as `meta_loop_runs.id` (often campaign **name**)
-- Crown/kill on starved creatives without calling delivery unfair
-- Trust snapshot spend without filtering prior-run creatives
+## Attribution
 
-## Join keys (verify live)
+- Prefer explicit provider entity ids when they are populated and verified.
+- Inspect a bounded sample of live payload keys before relying on a join.
+- Use approved UTM or landing-page crumbs only as documented fallback evidence.
+- Do not treat a campaign label as a run UUID.
+- Distinguish a missing column from a present but null value.
+- State confidence and unmatched rows.
 
-| Key | Typical state | Use |
-|-----|---------------|-----|
-| `leads.meta_ad_id` | Column **exists**, often **null** | Target join when filled |
-| `raw_payload.utm_id` | Often **absent** | Do not assume |
-| `utm_content` | Present | Best current creative crumb |
-| LP URL / slug | Present | Match creatives |
-| Campaign UTM | Harness name | Context only |
+## Diagnosis sequence
 
-**In flight:** form → intake must persist ad id into `meta_ad_id` (and campaign/adset if available). Read `LeadForm.tsx` + `api/leads/inbound` before proposing schema work.
+1. Re-read settled, in-flight, and open sections of the current contract.
+2. Load active runs and the registered dashboard or stalled-run views.
+3. Resolve the exact leaf brand and its current config, gates, caps, and promotion prerequisites.
+4. Load creatives and compare recorded state with current provider state through an approved read path.
+5. Load snapshots by the documented join key and exclude prior-run bleed.
+6. Qualify CRM outcomes under the contract and map them to creatives only with proven keys.
+7. Report provider health beside commercial outcomes without dual-counting.
+8. Calculate delivery share and flag material starvation before ranking.
+9. Check whether writeback and learning completed.
+10. Review decisions, approvals, and events before recommending a state change.
 
-## Live diagnosis sequence
+## Fairness and decision safety
 
-1. **Re-read contract** Settled / In flight / Open calls (or latest on main after merge).
-2. **Active runs** — `meta_loop_runs.stage` not in (`done`,`entropy`,`killed`); prefer dashboard views.
-3. **Brand config** — harness + **winners_*** ids, gates, `daily_cap_cents` vs real Meta budget (flag contradictions).
-4. **Creatives** — `meta_ad_id`, status vs `meta_ads.status` (staged DB + ACTIVE Meta is common).
-5. **Snapshots** — by `creative_id`; **no run_id** on snapshots; watch prior-run bleed.
-6. **Commercial CRM** — qualify in-area / not spam / blank-state; per-creative via `utm_content` / LP until `meta_ad_id` works.
-7. **Insights health** — snapshot leads; explain delta vs CRM (OOA suppression vs tracking gap).
-8. **Delivery skew** — spend/impr share; starve callout before ranking.
-9. **Learning** — any `writeback`/`done`? pains `won`/`lost`/`times_used`?
-10. **Decisions / approvals / events**
+- Do not crown or stop a creative whose delivery was materially starved without calling out the unfair comparison.
+- Do not infer commercial failure from click-through or impression data alone.
+- Do not trust stored budget fields without comparing them to the authoritative provider read.
+- Keep open product calls with the product owner role.
+- Separate recommendations from actions requiring human approval.
 
-## Code still In flight vs Settled
+## Output
 
-| Area | Today (verify) | Settled target |
-|------|----------------|----------------|
-| Judge | Insights + can crown 0-lead CTR past impr floor | Commercial CRM; two-tier winner (open call) |
-| Trial-reader | Insights lead actions | Keep as health; add CRM qualified |
-| Attribution | meta_ad_* null on many loop LPs | Intake writes ids |
-| Delivery | ABO skew | Prefer 1 ad set / creative (ops) |
-| `daily_cap_cents` | Config decoration risk | Enforce or delete |
-| Haven | No full winners path | Hold until Renjoy `done` |
+1. One-line verdict.
+2. Run, stage, window, spend, qualified commercial outcomes, and platform health.
+3. Per-creative delivery share and qualified outcomes.
+4. Proven data-quality or contract gaps, ranked by severity.
+5. Actions with owner roles and verification gates.
+6. Explicit approvals required.
 
-## Agent DoD (before performance claims)
-
-From contract §11 — all boxes. Especially: qualification, join-key proof, no dual-count, delivery fairness, learning status, L3 separation.
-
-## Operator output shape
-
-1. Verdict (one line)  
-2. Live board: run, stage, window, spend, **commercial CRM**, **insights health**  
-3. Per-creative delivery + qualified CRM  
-4. Good / not-great (P0–P2) aligned to contract  
-5. Actions + owners; mark Open calls for Reid  
-6. Explicit L3 items  
-
-## After audits
-
-- If **product truth** changed → PR to `docs/loops/meta-loop/CONTRACT.md` + registry `last_verified` (same PR as code when code changes).
-- If **operator method** changed → update this skill → Mr. Stayd fleet commit + `apply-bot.sh don-draper`.
-- Optional: dated line in profile `memories/MEMORY.md` under Settled calls.
-
-## Pitfalls
-
-1. Snapshot leads ≠ commercial truth  
-2. Raw `meta_loop_lp` count includes OOA  
-3. `meta_ad_id` column empty ≠ “column missing”  
-4. Learning never closes without writeback→done  
-5. Winners ad set required per brand for promotion  
-6. Human enables ads after trial_start  
-7. ABO skew invalidates ranking  
-8. Three competing budget numbers  
-9. Wrong Supabase project  
-10. Tokens in Slack / service_role in git  
-
-## References
-
-- Contract: stayd-os `docs/loops/meta-loop/CONTRACT.md`
-- Checklist: `references/diagnosis-checklist.md`
-- Repo docs: `META_LOOP_*.md`, `meta-loop-audit-2026-08-13.md`
-- `staydos-ops` for Supabase access pattern
+Before finalizing, confirm scope, qualification, join proof, no dual-counting, delivery fairness, learning status, and the applicable approval boundary. Use `references/diagnosis-checklist.md` for the working checklist.
