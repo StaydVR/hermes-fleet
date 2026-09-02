@@ -114,6 +114,7 @@ SLACK_CONFIG = {
     ("display", "platforms", "slack", "busy_ack_detail"): False,
     ("display", "platforms", "slack", "live_status"): "off",
     ("gateway", "streaming", "enabled"): False,
+    ("gateway", "platforms", "slack", "typing_indicator"): False,
     ("platforms", "slack", "reply_to_mode"): "first",
     ("platforms", "slack", "extra", "reply_in_thread"): True,
     ("platforms", "slack", "extra", "reply_broadcast"): False,

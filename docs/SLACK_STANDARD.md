@@ -46,6 +46,9 @@ display:
 gateway:
   streaming:
     enabled: false
+  platforms:
+    slack:
+      typing_indicator: false
 
 platforms:
   slack:
