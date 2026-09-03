@@ -1,6 +1,6 @@
 ---
 name: stayd-slack-standard
-description: "Use for every Stayd Hermes Slack interaction and when configuring or testing mentions, threads, lifecycle reactions, quiet-mode, bot traffic, and final receipts."
+description: "Use for every Stayd Hermes Slack interaction and when configuring or testing exact-message mentions, threads, lifecycle reactions, working status, bot traffic, and final receipts."
 version: 1.0.0
 author: Stayd Fleet
 license: MIT
@@ -16,16 +16,17 @@ Apply this behavior to every Slack turn. It does not expand the agent's audience
 ## Decide whether to respond
 
 - Respond normally to an authorized DM.
-- In a channel, require the bot's initial explicit mention.
-- Continue reasonably inside a thread the bot validly joined; do not require a repeated mention.
-- Ignore ambient channel traffic and messages addressed to other humans.
-- Ignore bot messages unless this bot is explicitly mentioned. Never create a bot-to-bot response loop.
+- In every shared Slack surface—channels, existing threads, and group DMs—require this bot's explicit mention on that exact message.
+- Do not treat an earlier mention, a prior bot reply, or participation in the thread as admission for a later unmentioned message.
+- Ignore ambient shared-surface traffic and messages that open with another person's mention.
+- Ignore bot messages unless this bot is explicitly mentioned on that exact message. Never create a bot-to-bot response loop.
 
 ## While working
 
-- Let Hermes add `:eyes:` when processing begins.
-- Do not send reasoning, thoughts, token streams, tool progress, interim assistant text, live status, native task cards, long-running notices, or heartbeat updates.
-- Keep channel work inside the source thread and never broadcast the reply to the channel.
+- For an eligible message, let Hermes add `:eyes:` once when processing begins. Ignored shared-surface messages get no reply and no reaction.
+- Use only the normal `is thinking...` indicator and compact verb footer for working state. Never expose command or path arguments.
+- Do not send reasoning, thoughts, token streams, tool progress, interim assistant text, native task cards, long-running notices, busy-ack detail, or heartbeat updates.
+- Keep shared-surface work inside the source thread and never broadcast the reply to the channel.
 - If blocked, finish with one concise blocker receipt; do not drip repeated status messages.
 
 ## Finish honestly
@@ -36,7 +37,7 @@ Apply this behavior to every Slack turn. It does not expand the agent's audience
 4. Return success only when verification passed.
 5. Send exactly one concise final receipt.
 
-Hermes removes `:eyes:` at completion and adds `:white_check_mark:` only for a successful processing outcome. A failed run may receive `:x:` and must never receive a check. Do not return success early merely to improve the Slack reaction.
+Hermes removes `:eyes:` at completion and adds `:white_check_mark:` for `SUCCESS` or `:x:` for `FAILURE`. The reaction reflects the processing outcome and never replaces independent verification. Do not return success early merely to improve the Slack reaction.
 
 ## Final receipt
 

@@ -40,15 +40,17 @@ Record direct evidence for each applicable item. Mark non-applicable items with 
 ## Slack
 
 - [ ] Authorized DM returns exactly one concise final receipt.
-- [ ] Initial channel mention creates a thread reply with no broadcast.
-- [ ] Unmentioned new channel message is ignored.
-- [ ] Reasonable thread continuation works without a repeated mention.
-- [ ] Messages addressed to other humans are ignored unless the bot is clearly addressed.
+- [ ] Explicit channel mention creates a source-thread reply with no broadcast.
+- [ ] Unmentioned channel, existing-thread, and group-DM messages receive neither a reply nor a reaction.
+- [ ] Earlier mention or bot participation does not admit a later unmentioned thread reply.
+- [ ] A fresh explicit mention in an existing thread or group DM receives one source-thread reply.
+- [ ] Messages opening with another human's mention are ignored.
 - [ ] Ambient bot messages are ignored; explicitly mentioned bot traffic does not loop.
-- [ ] `:eyes:` appears once at start and is removed at completion.
+- [ ] For eligible work, `:eyes:` appears once at start and is removed at completion.
 - [ ] Verified success receives `:white_check_mark:`.
-- [ ] Forced failure receives no check reaction.
-- [ ] No thought text, token stream, tool progress, interim text, live status, heartbeat, native task card, or duplicate message appears.
+- [ ] Forced failure receives `:x:` and no check reaction.
+- [ ] The normal `is thinking...` indicator and argument-free verb footer appear only while eligible work is active.
+- [ ] No thought text, token stream, tool progress, interim text, heartbeat, long-running notice, busy-ack detail, native task card, gateway stream, or duplicate final message appears.
 
 ## Gateway and regression
 

@@ -57,10 +57,10 @@ Spend, external sends, publishing, production changes, permissions, credentials,
 
 - Use a separate app identity per durable agent.
 - Invite it only to approved rooms.
-- Require an initial channel mention and keep replies in non-broadcast threads.
+- Require an explicit bot mention on every exact message in channels, existing threads, and group DMs; keep replies in non-broadcast source threads.
 - Treat operator-audience access as a security boundary and review it regularly.
 - OAuth scope configuration is not proof of the installed grant; reinstall and inspect the live grant after changes.
-- `reactions:write` is required for verified lifecycle reactions.
+- `reactions:write` is required for lifecycle reactions; `assistant:write` is required for Hermes's argument-free footer status.
 
 ## Incidents
 

@@ -40,4 +40,4 @@ This profile is isolated. It does not inherit another profile's personality, mem
 3. **Freshness:** `<prompt requiring the live source>`
 4. **Negative boundary:** `<prompt requiring a safe refusal>`
 5. **Approved write:** `<harmless deduplicated write and read-back test, or not applicable>`
-6. **Slack:** DM, initial mention, thread continuation, ignored ambient message, lifecycle reactions, and one final receipt.
+6. **Slack:** authorized DM, exact-message mentions in channels/threads/group DMs, ignored unmentioned follow-up, lifecycle reactions, working footer, and one final receipt.

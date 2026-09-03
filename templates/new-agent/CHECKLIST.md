@@ -12,7 +12,7 @@
 - [ ] Every angle-bracket placeholder in this directory is replaced.
 - [ ] The slug is stable, lowercase, and matches the intended live profile.
 - [ ] No peer credentials, memories, sessions, scheduled jobs, or identity text were copied.
-- [ ] Runtime config contains the complete Slack quiet-mode contract.
+- [ ] Runtime config contains the complete Slack exact-mention, one-final-reply, and working-status contract.
 - [ ] `SLACK_REACTIONS=true` is present in non-secret defaults.
 
 ## Access
@@ -26,10 +26,10 @@
 ## Slack
 
 - [ ] Dedicated app created from the reviewed manifest.
-- [ ] Installed OAuth grant includes the intended minimum scopes and `reactions:write`.
+- [ ] Installed OAuth grant includes the intended minimum scopes, `reactions:write`, and `assistant:write`.
 - [ ] Bot and app tokens belong to the intended app and workspace.
 - [ ] Approved rooms and access model are documented.
-- [ ] DM, mention, thread, ignore, reaction, failure, and one-receipt tests pass.
+- [ ] DM, exact-message channel/thread/group-DM mention, unmentioned follow-up, reaction, footer, failure, and one-receipt tests pass.
 
 ## Apply and acceptance
 

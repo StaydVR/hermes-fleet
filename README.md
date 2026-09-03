@@ -134,15 +134,15 @@ Create one Slack app per durable agent identity from the reviewed `slack-app-man
 1. In Slack app administration, choose creation from an app manifest.
 2. Review the bot display text and keep it role-based.
 3. Enable Socket Mode.
-4. Request only the events the role needs. The normal baseline is app mentions, public/private channel messages where invited, and direct messages.
-5. Include `chat:write` for the final receipt and `reactions:write` for lifecycle reactions.
+4. Request only the events the role needs. The normal baseline is app mentions plus public/private channel, 1:1 DM, and group-DM messages where the app participates.
+5. Include `chat:write` for the final receipt, `reactions:write` for lifecycle reactions, and `assistant:write` for Hermes's compact footer status.
 6. Avoid admin, deletion, channel-management, workflow-management, and user-management scopes unless separately approved.
 7. Install or reinstall the app after scope changes.
 8. Store `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` only in the target profile's runtime `.env`.
 9. Confirm the installed token grants match the manifest; configured scopes without a reinstall are not sufficient.
 10. Invite the bot only to approved channels.
 
-The required interaction contract is in [`docs/SLACK_STANDARD.md`](docs/SLACK_STANDARD.md). Channels require an initial explicit mention; DMs work normally; a thread can continue without repeated mentions; replies stay in the thread and are not broadcast.
+The required interaction contract and exact OAuth rollout are in [`docs/SLACK_STANDARD.md`](docs/SLACK_STANDARD.md). Authorized 1:1 DMs work normally. Every channel, existing-thread, and group-DM message needs a fresh explicit bot mention on that exact message; prior mentions or participation do not carry forward. Replies stay in the source thread and are not broadcast.
 
 ## 6. Create or migrate the Hermes profile
 
@@ -221,16 +221,17 @@ Never restart a generic or unrelated gateway as a shortcut. Confirm:
 Use [`docs/ACCEPTANCE.md`](docs/ACCEPTANCE.md) and record evidence for every promised capability. At minimum, test through the real Slack identity:
 
 - authorized DM;
-- initial channel mention;
-- unmentioned channel message is ignored;
-- thread continuation remains in-thread without broadcast;
+- explicit channel mention;
+- unmentioned channel, existing-thread, and group-DM messages receive no reply or reaction;
+- fresh thread and group-DM mentions remain in the source thread without broadcast;
 - correct identity, scope, sources, and uncertainty language;
 - a freshness-sensitive question selects the live source;
 - an unapproved consequential write is refused with a useful next step;
 - an approved write, if the role has one, deduplicates and reads back;
 - one and only one concise final receipt;
 - `:eyes:` at start, removed at completion, then `:white_check_mark:` only after verified success;
-- failure does not receive a check reaction.
+- `:x:` on failure with no check reaction;
+- the normal thinking indicator and argument-free footer status appear while eligible work is active.
 
 Do not mark the launch complete from config inspection, a process exit code, or an intermediate status. Read the agent's persisted final response and verify the side effect from the authoritative source.
 

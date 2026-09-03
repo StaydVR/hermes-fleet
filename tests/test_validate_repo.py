@@ -6,7 +6,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.validate_repo import validate_privacy, validate_repository, validate_skills, write_skill
+import yaml
+
+from tools.validate_repo import (
+    SLACK_CONFIG,
+    validate_privacy,
+    validate_repository,
+    validate_runtime_overlays,
+    validate_skills,
+    validate_slack_manifest,
+    write_skill,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -159,6 +169,68 @@ class RepositoryValidatorTests(unittest.TestCase):
             self.assertEqual([], findings)
             self.assertEqual(1, skill_count)
             self.assertGreater(scanned_count, 0)
+
+    def test_runtime_overlay_rejects_old_slack_admission_and_status_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            overlay: dict[str, object] = {}
+            for key_path, expected in SLACK_CONFIG.items():
+                target = overlay
+                for key in key_path[:-1]:
+                    target = target.setdefault(key, {})  # type: ignore[assignment]
+                target[key_path[-1]] = expected
+
+            old_values = {
+                ("slack", "strict_mention"): False,
+                ("slack", "thread_require_mention"): False,
+                ("gateway", "platforms", "slack", "typing_indicator"): False,
+                ("gateway", "platforms", "slack", "typing_status_text"): "working",
+                ("display", "platforms", "slack", "live_status"): "off",
+            }
+            path = root / "bots/example/runtime-config.yaml"
+            path.parent.mkdir(parents=True)
+
+            for key_path, old_value in old_values.items():
+                with self.subTest(key=".".join(key_path)):
+                    changed = yaml.safe_load(yaml.safe_dump(overlay))
+                    target = changed
+                    for key in key_path[:-1]:
+                        target = target[key]
+                    target[key_path[-1]] = old_value
+                    path.write_text(yaml.safe_dump(changed), encoding="utf-8")
+                    findings = validate_runtime_overlays(root)
+                    self.assertTrue(
+                        any(".".join(key_path) in finding.message for finding in findings),
+                        findings,
+                    )
+
+    def test_template_manifest_requires_reaction_and_assistant_scopes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "templates/new-agent/slack-app-manifest.yaml"
+            path.parent.mkdir(parents=True)
+
+            for missing in ("assistant:write", "reactions:write"):
+                with self.subTest(missing=missing):
+                    scopes = {"assistant:write", "reactions:write", "chat:write"} - {missing}
+                    path.write_text(
+                        yaml.safe_dump({"oauth_config": {"scopes": {"bot": sorted(scopes)}}}),
+                        encoding="utf-8",
+                    )
+                    findings = validate_slack_manifest(root)
+                    self.assertTrue(any(missing in finding.message for finding in findings), findings)
+
+            path.write_text(
+                yaml.safe_dump(
+                    {
+                        "oauth_config": {
+                            "scopes": {"bot": ["assistant:write", "chat:write", "reactions:write"]}
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual([], validate_slack_manifest(root))
 
 
 if __name__ == "__main__":

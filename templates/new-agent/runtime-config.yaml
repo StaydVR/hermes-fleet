@@ -15,14 +15,15 @@ display:
       streaming: false
       long_running_notifications: false
       busy_ack_detail: false
-      live_status: "off"
+      live_status: verb
 
 gateway:
   streaming:
     enabled: false
   platforms:
     slack:
-      typing_indicator: false
+      typing_indicator: true
+      typing_status_text: "is thinking..."
 
 platforms:
   slack:
@@ -35,8 +36,8 @@ platforms:
 
 slack:
   require_mention: true
-  strict_mention: false
-  thread_require_mention: false
+  strict_mention: true
+  thread_require_mention: true
   ignore_other_user_mentions: true
 
 model:

@@ -70,7 +70,7 @@ Use `docs/ACCEPTANCE.md`. At minimum prove:
 - canonical and freshness-sensitive source selection;
 - safe refusal of an unapproved write;
 - deduplicated execution and read-back for any approved write path;
-- DM, mention, thread, ignore, lifecycle reaction, and one-receipt Slack behavior;
+- authorized DM, exact-message channel/thread/group-DM mention gating, ignored unmentioned follow-up, lifecycle reaction, working footer, and one-receipt Slack behavior;
 - the same smoke test after the profile-specific restart;
 - a known-good rollback revision.
 

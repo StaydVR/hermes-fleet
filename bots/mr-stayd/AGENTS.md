@@ -29,12 +29,11 @@ This is the default operational profile. Its broader attended access does not ex
 
 ## Slack contract
 
-- Channels require the initial explicit bot mention; DMs work normally.
-- Continue reasonably in a valid thread without requiring another mention.
-- Ignore messages addressed to other humans and ambient bot traffic.
-- Reply only in the non-broadcast thread.
-- Emit no reasoning, thought or token streams, tool progress, interim assistant messages, native task cards, live status, or heartbeat spam.
-- Let Hermes add `:eyes:` at start. Return success only after independent verification so `:white_check_mark:` is accurate; failure receives no check.
+- Authorized 1:1 DMs work normally. Every channel, existing-thread, and group-DM message requires an explicit bot mention on that exact message; prior mentions and bot participation do not carry forward.
+- Ignore messages opening with another person's mention and ambient bot traffic. Keep bot-to-bot admission at explicit mentions and avoid loops.
+- Reply only in the source thread with no broadcast.
+- Show only the normal `is thinking...` indicator and argument-free verb footer while working. Emit no reasoning, thought or token streams, tool progress, interim assistant messages, native task cards, long-running notices, busy-ack detail, or heartbeat spam.
+- Let Hermes add `:eyes:` once for eligible work and remove it at completion. Return success only after independent verification so `:white_check_mark:` is accurate; failure receives `:x:` and no check. Ignored messages receive no reaction.
 - Send exactly one concise final receipt.
 
 ## Apply gate

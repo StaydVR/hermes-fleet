@@ -112,19 +112,22 @@ SLACK_CONFIG = {
     ("display", "platforms", "slack", "streaming"): False,
     ("display", "platforms", "slack", "long_running_notifications"): False,
     ("display", "platforms", "slack", "busy_ack_detail"): False,
-    ("display", "platforms", "slack", "live_status"): "off",
+    ("display", "platforms", "slack", "live_status"): "verb",
     ("gateway", "streaming", "enabled"): False,
-    ("gateway", "platforms", "slack", "typing_indicator"): False,
+    ("gateway", "platforms", "slack", "typing_indicator"): True,
+    ("gateway", "platforms", "slack", "typing_status_text"): "is thinking...",
     ("platforms", "slack", "reply_to_mode"): "first",
     ("platforms", "slack", "extra", "reply_in_thread"): True,
     ("platforms", "slack", "extra", "reply_broadcast"): False,
     ("platforms", "slack", "extra", "native_task_cards"): False,
     ("platforms", "slack", "extra", "allow_bots"): "mentions",
     ("slack", "require_mention"): True,
-    ("slack", "strict_mention"): False,
-    ("slack", "thread_require_mention"): False,
+    ("slack", "strict_mention"): True,
+    ("slack", "thread_require_mention"): True,
     ("slack", "ignore_other_user_mentions"): True,
 }
+
+REQUIRED_SLACK_BOT_SCOPES = {"assistant:write", "reactions:write"}
 
 SAFE_ENV_VALUES = {
     "SLACK_REACTIONS": re.compile(r"true"),
@@ -298,6 +301,29 @@ def validate_runtime_overlays(root: Path) -> list[Finding]:
     return findings
 
 
+def validate_slack_manifest(root: Path) -> list[Finding]:
+    path = root / "templates/new-agent/slack-app-manifest.yaml"
+    if not path.is_file():
+        return []
+
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, yaml.YAMLError) as exc:
+        return [Finding(path, f"Slack app manifest is not valid YAML: {exc}")]
+
+    try:
+        scopes = nested_value(data, ("oauth_config", "scopes", "bot"))
+    except KeyError:
+        return [Finding(path, "Slack app manifest is missing oauth_config.scopes.bot")]
+    if not isinstance(scopes, list) or any(not isinstance(scope, str) for scope in scopes):
+        return [Finding(path, "Slack app manifest oauth_config.scopes.bot must be a list of scope names")]
+
+    missing = sorted(REQUIRED_SLACK_BOT_SCOPES.difference(scopes))
+    if missing:
+        return [Finding(path, f"Slack app manifest is missing required bot scope(s): {', '.join(missing)}")]
+    return []
+
+
 def validate_env_defaults(root: Path) -> list[Finding]:
     findings: list[Finding] = []
     paths = sorted((root / "bots").glob("*/env.defaults"))
@@ -334,6 +360,7 @@ def validate_repository(root: Path) -> tuple[list[Finding], int, int]:
     privacy_findings, scanned_count = validate_privacy(root)
     findings = skill_findings + privacy_findings
     findings.extend(validate_runtime_overlays(root))
+    findings.extend(validate_slack_manifest(root))
     findings.extend(validate_env_defaults(root))
     return findings, skill_count, scanned_count
 

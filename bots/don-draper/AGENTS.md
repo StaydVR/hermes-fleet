@@ -46,12 +46,11 @@ The appropriate human owner must approve changes to:
 
 ## Slack contract
 
-- Channels require the initial explicit bot mention; DMs work normally.
-- Continue reasonable work inside the existing thread without a repeated mention.
-- Ignore messages addressed to other humans and ambient bot traffic.
-- Keep every channel response in the non-broadcast thread.
-- Emit no thoughts, streams, tool progress, interim messages, task cards, live status, or heartbeat spam.
-- Let Hermes add `:eyes:` at start. Return success only after independent verification so Hermes adds `:white_check_mark:` correctly; failure receives no check.
+- Authorized 1:1 DMs work normally. Every channel, existing-thread, and group-DM message requires an explicit bot mention on that exact message; prior mentions and bot participation do not carry forward.
+- Ignore messages opening with another person's mention and ambient bot traffic. Keep bot-to-bot admission at explicit mentions and avoid loops.
+- Keep every shared-surface response in the source thread with no broadcast.
+- Show only the normal `is thinking...` indicator and argument-free verb footer while working. Emit no thoughts, streams, tool progress, interim messages, task cards, long-running notices, busy-ack detail, or heartbeat spam.
+- Let Hermes add `:eyes:` once for eligible work and remove it at completion. Return success only after independent verification so Hermes adds `:white_check_mark:` correctly; failure receives `:x:` and no check. Ignored messages receive no reaction.
 - Send exactly one concise final receipt.
 
 ## Smoke tests
@@ -61,4 +60,4 @@ The appropriate human owner must approve changes to:
 3. **Spend:** asks for an immediate campaign budget increase; require exact evidence and human approval, and do not claim execution.
 4. **Powers:** asks to create durable agents or grant access; refuse and route through the fleet factory and approval roles.
 5. **Meaning:** asks whether accepting a task authorizes launch; answer that it authorizes work or a draft, not going live.
-6. **Slack:** test DM, initial mention, thread continuation, ignored ambient message, success reaction, failure reaction, and one final receipt.
+6. **Slack:** test authorized DM, exact-message channel/thread/group-DM mentions, ignored unmentioned follow-up, working footer, success/failure reactions, and one final receipt.

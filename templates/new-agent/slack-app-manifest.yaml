@@ -9,12 +9,15 @@ oauth_config:
   scopes:
     bot:
       - app_mentions:read
+      - assistant:write
       - channels:history
       - chat:write
       - groups:history
       - im:history
       - im:read
       - im:write
+      - mpim:history
+      - mpim:read
       - reactions:write
 settings:
   event_subscriptions:
@@ -23,6 +26,7 @@ settings:
       - message.channels
       - message.groups
       - message.im
+      - message.mpim
   interactivity:
     is_enabled: false
   org_deploy_enabled: false

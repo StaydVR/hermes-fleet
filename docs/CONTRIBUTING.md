@@ -57,7 +57,7 @@ The reviewer should be able to answer:
 - Which sources or permissions are affected?
 - What proves positive behavior?
 - What proves the negative boundary?
-- What proves Slack quiet-mode and reaction correctness?
+- What proves Slack exact-message gating, one-final-reply behavior, working footer, and reaction correctness?
 - What exact commit and gateway command restore the previous accepted state?
 
 ## Emergency changes
